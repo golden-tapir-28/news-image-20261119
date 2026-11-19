@@ -9,13 +9,16 @@
 // Outside the grader's container, MAKEFUN_OUTPUT_DIR stands in for /output:
 //   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 
-import { copyFileSync, mkdirSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+const source = fileURLToPath(new URL('./entry.png', import.meta.url));
+if (!existsSync(source)) {
+  throw new Error(`entry.png not found beside main.ts: ${source}`);
+}
 const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 mkdirSync(outDir, { recursive: true });
-copyFileSync(
-  fileURLToPath(new URL('./entry.png', import.meta.url)),
-  join(outDir, 'entry.png'),
-);
+const out = join(outDir, 'entry.png');
+copyFileSync(source, out);
+console.log(`wrote ${out} (${statSync(out).size} bytes)`);
